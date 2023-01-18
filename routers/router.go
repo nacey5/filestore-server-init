@@ -14,6 +14,7 @@ func NewRouter() *gin.Engine {
 	}
 
 	fileInfo := v1.NewFileMeta()
+	userInfo := v1.NewUserMeta()
 
 	apiv1 := r.Group("/file")
 	{
@@ -24,6 +25,11 @@ func NewRouter() *gin.Engine {
 		apiv1.POST("/download", fileInfo.DownloadHandler)
 		apiv1.POST("/update", fileInfo.FileMetaUpdateHandler)
 		apiv1.DELETE("/delete", fileInfo.FileDeleteHandler)
+	}
+	apiv1U := r.Group("/user")
+	{
+		apiv1U.GET("/", userInfo.SignupHandler)
+		apiv1U.POST("/", userInfo.SignupHandler)
 	}
 
 	return r

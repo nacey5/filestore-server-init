@@ -1,0 +1,26 @@
+package db
+
+import (
+	mydb "filestore-server/db/mysql"
+	"fmt"
+)
+
+// UserSignup 通过用户名及密码完成user表的注册
+func UserSignup(username, password string) bool {
+	stmt, err := mydb.DBConn().Prepare("insert ignore into tbl_user(`user_name`,`user_pwd`) values (?,?)")
+	if err != nil {
+		fmt.Println("Failed to insert,err:" + err.Error())
+		return false
+	}
+	defer stmt.Close()
+	ret, err := stmt.Exec(username, password)
+	if err != nil {
+		fmt.Println("Failed to insert.err:%s", err.Error())
+		return false
+	}
+	//重复注册校验--只有是初次注册的时候
+	if rowsAffected, err := ret.RowsAffected(); nil == err && rowsAffected > 0 {
+		return true
+	}
+	return false
+}

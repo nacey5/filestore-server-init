@@ -15,6 +15,12 @@ type Model struct {
 	UpdateAt string `json:"update_at"`
 }
 
+type UserModel struct {
+	ID         uint32 `gorm:"primary_key" json:"id"`
+	SignupAt   string `json:"signup_at"`
+	LastActive string `json:"last_active"`
+}
+
 func NewDBEngine(databaseSetting *setting.DatabaseSettingS) (*gorm.DB, error) {
 	s := "%s:%s@tcp(%s)/%s?charset=%s&parseTime=%t&loc=Local"
 	db, err := gorm.Open(databaseSetting.DBType, fmt.Sprintf(s,
