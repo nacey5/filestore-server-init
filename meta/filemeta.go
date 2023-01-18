@@ -13,11 +13,13 @@ type FileMeta struct {
 var fileMetas map[string]FileMeta
 
 func init() {
+	println("fileMetas初始化")
 	fileMetas = make(map[string]FileMeta)
 }
 
 // UpdateFileMeta 新增或者更新文件元信息
 func UpdateFileMeta(fmeta FileMeta) {
+	println("更新map信息")
 	fileMetas[fmeta.FileSha1] = fmeta
 }
 

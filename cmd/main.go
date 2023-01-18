@@ -2,13 +2,18 @@ package main
 
 import (
 	"filestore-server/global"
-	"filestore-server/handler"
 	"filestore-server/pkg/setting"
+	"filestore-server/routers"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/net/context"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -32,16 +37,57 @@ func main() {
 	}
 	gin.SetMode(global.ServerSetting.RunMode)
 
-	http.HandleFunc("/file/upload", handler.UploadHandler)
-	http.HandleFunc("/file/upload/suc", handler.UploadSucHandler)
-	http.HandleFunc("/file/meta", handler.GetFileMetaHandler)
-	http.HandleFunc("/file/download", handler.DownloadHandler)
-	http.HandleFunc("/file/update", handler.FileMetaUpdateHandler)
-	http.HandleFunc("/file/delete", handler.FileDeleteHandler)
-	//这里就不搞配置文件那套了，直接读取端口进行访问
-	err := http.ListenAndServe(":8080", nil)
+	router := routers.NewRouter()
+	s := &http.Server{
+		Addr:           ":8080",
+		Handler:        router,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+
+	//http.HandleFunc("/file/upload", handler.UploadHandler)
+	//http.HandleFunc("/file/upload/suc", handler.UploadSucHandler)
+	//http.HandleFunc("/file/meta", handler.GetFileMetaHandler)
+	//http.HandleFunc("/file/download", handler.DownloadHandler)
+	//http.HandleFunc("/file/update", handler.FileMetaUpdateHandler)
+	//http.HandleFunc("/file/delete", handler.FileDeleteHandler)
+	////这里就不搞配置文件那套了，直接读取端口进行访问
+	//err := http.ListenAndServe(":8080", nil)
+	//if err != nil {
+	//	fmt.Printf("Failed to start server,err:%s", err.Error())
+	//}
+
+	go func() {
+		err := s.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("s.ListenAndServe err:%v", err)
+		}
+	}()
+	//等待信号中断
+	quit := make(chan os.Signal)
+	//接受syscall.SiGINT 和syscall.SIGTERM信号
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shuting down server...")
+
+	//最大时间控制，用于通知服务器有5s时间来处理原来的请求
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := s.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown:", err)
+	}
+	log.Println("Server existing")
+
+}
+func init() {
+	err := setupSetting()
 	if err != nil {
-		fmt.Printf("Failed to start server,err:%s", err.Error())
+		log.Fatalf("init.setupSetting err: %v", err)
+	}
+	err = setupFlag()
+	if err != nil {
+		log.Fatalf("init.setupFlag err: %v", err)
 	}
 }
 

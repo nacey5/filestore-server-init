@@ -15,14 +15,15 @@ func NewRouter() *gin.Engine {
 
 	fileInfo := v1.NewFileMeta()
 
-	apiv1 := r.Group("/api/v1")
+	apiv1 := r.Group("/file")
 	{
-		apiv1.GET("/file/upload", fileInfo.UploadHandler)
-		apiv1.POST("/file/upload/suc", fileInfo.UploadSucHandler)
-		apiv1.POST("/file/meta", fileInfo.GetFileMetaHandler)
-		apiv1.POST("/file/download", fileInfo.DownloadHandler)
-		apiv1.POST("/file/update", fileInfo.FileMetaUpdateHandler)
-		apiv1.DELETE("/file/delete", fileInfo.FileDeleteHandler)
+		apiv1.GET("/upload", fileInfo.UploadHandler)
+		apiv1.POST("/upload", fileInfo.UploadHandler)
+		apiv1.GET("/upload/suc", fileInfo.UploadSucHandler)
+		apiv1.GET("/meta", fileInfo.GetFileMetaHandler)
+		apiv1.POST("/download", fileInfo.DownloadHandler)
+		apiv1.POST("/update", fileInfo.FileMetaUpdateHandler)
+		apiv1.DELETE("/delete", fileInfo.FileDeleteHandler)
 	}
 
 	return r
