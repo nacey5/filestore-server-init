@@ -2,11 +2,13 @@ package main
 
 import (
 	"filestore-server/global"
+	"filestore-server/model"
 	"filestore-server/pkg/setting"
 	"filestore-server/routers"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
@@ -98,6 +100,19 @@ func setupSetting() error {
 		return err
 	}
 	err = setting.ReadSection("Server", &global.ServerSetting)
+	if err != nil {
+		return err
+	}
+
+	err = setting.ReadSection("Database", &global.DatabaseSetting)
+	if err != nil {
+		return err
+	}
+
+	err = setupDBEngine()
+	if err != nil {
+		log.Fatalf("init.setupDBEngine err: %v", err)
+	}
 
 	global.ServerSetting.ReadTimeout *= time.Second
 	global.ServerSetting.WriteTimeout *= time.Second
@@ -118,5 +133,16 @@ func setupFlag() error {
 	flag.StringVar(&config, "config", "configs/", "指定要使用的配置文件路径")
 	flag.BoolVar(&isVersion, "version", false, "编译信息")
 	flag.Parse()
+	return nil
+}
+
+// 设置数据库驱动
+func setupDBEngine() error {
+	var err error
+	global.DBEngine, err = model.NewDBEngine(global.DatabaseSetting)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

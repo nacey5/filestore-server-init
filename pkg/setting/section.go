@@ -9,6 +9,19 @@ type ServerSettings struct {
 	WriteTimeout time.Duration
 }
 
+type DatabaseSettingS struct {
+	DBType       string
+	UserName     string
+	Password     string
+	Host         string
+	DBName       string
+	TablePrefix  string
+	Charset      string
+	ParseTime    bool
+	MaxIdleConns int
+	MaxOpenConns int
+}
+
 var sections = make(map[string]interface{})
 
 // ReadSection 读取单个作用域

@@ -3,3 +3,14 @@ Server:
   HttpPort: 8000
   ReadTimeout: 60
   WriteTimeout: 60
+Database:
+  DBType: mysql
+  Username: root  # 填写你的数据库账号
+  Password: a1160124552  # 填写你的数据库密码
+  Host: 192.168.48.129:3306
+  DBName: fileserver
+  TablePrefix: tbl_
+  Charset: utf8
+  ParseTime: True
+  MaxIdleConns: 10
+  MaxOpenConns: 30

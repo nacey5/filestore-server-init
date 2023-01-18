@@ -1,6 +1,9 @@
 package meta
 
-import mydb "filestore-server/db"
+import (
+	"filestore-server/global"
+	"filestore-server/model"
+)
 
 // FileMeta 文件元信息结构
 type FileMeta struct {
@@ -27,7 +30,17 @@ func UpdateFileMeta(fmeta FileMeta) {
 
 // 更新/新增文件元信息到mysql中
 func UpdateFileMetaDB(fmeta FileMeta) bool {
-	return mydb.OnFileUploadFinished(fmeta.FileSha1, fmeta.FileName, fmeta.Location, fmeta.FileSize)
+	file := model.File{
+		FileSha1: fmeta.FileSha1,
+		FileSize: fmeta.FileSize,
+		FileName: fmeta.FileName,
+		Location: fmeta.Location,
+	}
+	err := file.Update(global.DBEngine)
+	if err == nil {
+		return true
+	}
+	return false
 }
 
 // GetFileMeta 通过fileSha1获得文件
@@ -37,15 +50,17 @@ func GetFileMeta(fileSha1 string) FileMeta {
 
 // GetFileMetaDB 从mysql获取文件元信息
 func GetFileMetaDB(fileSha1 string) (FileMeta, error) {
-	tfile, err := mydb.GetFileMeta(fileSha1)
+	file := model.File{FileSha1: fileSha1}
+	//tfile, err := mydb.GetFileMeta(fileSha1)
+	file, err := file.Get(global.DBEngine)
 	if err != nil {
 		return FileMeta{}, err
 	}
 	fmeta := FileMeta{
-		FileName: tfile.FileName.String,
-		FileSha1: tfile.FileHash,
-		FileSize: tfile.FileSize,
-		Location: tfile.FileAddr.String}
+		FileName: file.FileName,
+		FileSha1: file.FileSha1,
+		FileSize: file.FileSize,
+		Location: file.Location}
 
 	return fmeta, nil
 }
