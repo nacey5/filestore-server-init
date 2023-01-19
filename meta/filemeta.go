@@ -34,7 +34,7 @@ func UpdateFileMetaDB(fmeta FileMeta) bool {
 		FileSha1: fmeta.FileSha1,
 		FileSize: fmeta.FileSize,
 		FileName: fmeta.FileName,
-		Location: fmeta.Location,
+		FileAddr: fmeta.Location,
 	}
 	err := file.Update(global.DBEngine)
 	if err == nil {
@@ -60,7 +60,7 @@ func GetFileMetaDB(fileSha1 string) (FileMeta, error) {
 		FileName: file.FileName,
 		FileSha1: file.FileSha1,
 		FileSize: file.FileSize,
-		Location: file.Location}
+		Location: file.FileAddr}
 
 	return fmeta, nil
 }

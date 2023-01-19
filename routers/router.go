@@ -28,8 +28,11 @@ func NewRouter() *gin.Engine {
 	}
 	apiv1U := r.Group("/user")
 	{
-		apiv1U.GET("/", userInfo.SignupHandler)
-		apiv1U.POST("/", userInfo.SignupHandler)
+		apiv1U.GET("/signup", userInfo.SignupHandler)
+		apiv1U.POST("/signup", userInfo.SignupHandler)
+		apiv1U.POST("/signin", userInfo.SignInHandler)
+		apiv1U.GET("/signin", userInfo.SignInHandler)
+
 	}
 
 	return r

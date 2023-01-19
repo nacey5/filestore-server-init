@@ -55,6 +55,8 @@ func main() {
 	//http.HandleFunc("/file/update", handler.FileMetaUpdateHandler)
 	//http.HandleFunc("/file/delete", handler.FileDeleteHandler)
 	//http.HandleFunc("/user/signup", handler.SignupHandler)
+	//http.HandleFunc("/user/signin", handler.SignInHandler)
+	//http.HandleFunc("/user/info", handler.UserInfoHandler)
 	////这里就不搞配置文件那套了，直接读取端口进行访问
 	//err := http.ListenAndServe(":8080", nil)
 	//if err != nil {

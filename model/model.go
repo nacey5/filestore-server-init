@@ -10,15 +10,15 @@ import (
 )
 
 type Model struct {
-	ID       uint32 `gorm:"primary_key" json:"id"`
-	CreateAt string `json:"create_at"`
-	UpdateAt string `json:"update_at"`
+	ID       uint32    `gorm:"primary_key" json:"id"`
+	CreateAt time.Time `json:"create_at"`
+	UpdateAt time.Time `json:"update_at"`
 }
 
 type UserModel struct {
-	ID         uint32 `gorm:"primary_key" json:"id"`
-	SignupAt   string `json:"signup_at"`
-	LastActive string `json:"last_active"`
+	ID         uint32    `gorm:"primary_key" json:"id"`
+	SignupAt   time.Time `json:"signup_at"`
+	LastActive time.Time `json:"last_active"`
 }
 
 func NewDBEngine(databaseSetting *setting.DatabaseSettingS) (*gorm.DB, error) {
@@ -39,8 +39,8 @@ func NewDBEngine(databaseSetting *setting.DatabaseSettingS) (*gorm.DB, error) {
 		db.LogMode(true)
 	}
 	db.SingularTable(true)
-	db.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
-	db.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)
+	//db.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
+	//db.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)
 
 	db.DB().SetMaxIdleConns(databaseSetting.MaxIdleConns)
 	db.DB().SetMaxOpenConns(databaseSetting.MaxOpenConns)
@@ -52,17 +52,25 @@ func NewDBEngine(databaseSetting *setting.DatabaseSettingS) (*gorm.DB, error) {
 // 更新记录的时间hook
 func updateTimeStampForUpdateCallback(scope *gorm.Scope) {
 	if _, ok := scope.Get("gorm:update_column"); !ok {
-		_ = scope.SetColumn("UpdateAt", time.Now().Unix())
+		t := time.Now()
+		_ = scope.SetColumn("UpdateAt", t.Format("2006-01-02 15:04:05"))
 	}
 }
 
 // 创建记录的时间hook
 func updateTimeStampForCreateCallback(scope *gorm.Scope) {
 	if !scope.HasError() {
-		nowTime := time.Now().Unix()
+		nowTime := time.Now().Format("2006:01:02 15:04:05")
+		print(nowTime)
+
 		if createTimeField, ok := scope.FieldByName("CreateAt"); ok {
 			if createTimeField.IsBlank {
 				_ = createTimeField.Set(nowTime)
+			}
+		}
+		if SignupAtField, ok := scope.FieldByName("SignupAt"); ok {
+			if SignupAtField.IsBlank {
+				_ = SignupAtField.Set(nowTime)
 			}
 		}
 	}

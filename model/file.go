@@ -7,11 +7,11 @@ import (
 )
 
 type File struct {
-	*Model
+	ID       uint32 `gorm:"primary_key" json:"id"`
 	FileSha1 string `json:"file_sha1"`
 	FileName string `json:"file_name"`
 	FileSize int64  `json:"file_size"`
-	Location string `json:"file_addr"`
+	FileAddr string `json:"file_addr"`
 	status   int64  `json:"status"`
 }
 

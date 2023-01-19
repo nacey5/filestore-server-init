@@ -24,3 +24,72 @@ func UserSignup(username, password string) bool {
 	}
 	return false
 }
+
+// 判断密码是否一致
+func UserSignIn(username, encpwd string) bool {
+	stmt, err := mydb.DBConn().Prepare("select * from tbl_user where user_name= ? limit 1")
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	rows, err := stmt.Query(username)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	} else if rows == nil {
+		fmt.Println("username not found:" + username)
+		return false
+	}
+	pRows := mydb.ParseRows(rows)
+
+	if len(pRows) > 0 && string(pRows[0]["user_pwd"].([]byte)) == encpwd {
+		return true
+	}
+
+	return false
+}
+
+// UpdateToken 刷新用户登陆的token
+func UpdateToken(username, token string) bool {
+	stmt, err := mydb.DBConn().Prepare("replace into tbl_user_token(`user_name`,`user_token`) values (?,?)")
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(username, token)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	return true
+}
+
+// 从数据库查询返回的数据格式
+type User struct {
+	Username   string
+	Email      string
+	Phone      string
+	SignupAt   string
+	LastActive string
+	Status     int
+}
+
+func GetUserInfo(username string) (User, error) {
+	user := User{}
+	stmt, err := mydb.DBConn().Prepare("select user_name,signup_at from tbl_user where user_name=? limit 1")
+	if err != nil {
+		fmt.Printf(err.Error())
+		return user, err
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(username).Scan(&user.Username, &user.SignupAt)
+	if err != nil {
+		fmt.Printf(err.Error())
+		return user, err
+	}
+
+	return user, nil
+}
