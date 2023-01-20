@@ -79,13 +79,13 @@ func UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	//1.解析请求参数
 	r.ParseForm()
 	username := r.Form.Get("username")
-	token := r.Form.Get("token")
-	//2.验证token是否有效
-	isValidToken := util.IsTokenValid(token)
-	if !isValidToken {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
+	//token := r.Form.Get("token")
+	//2.验证token是否有效:::::在拦截器中定义~~
+	//isValidToken := util.IsTokenValid(token)
+	//if !isValidToken {
+	//	w.WriteHeader(http.StatusForbidden)
+	//	return
+	//}
 	//3.查询用户信息 todo 查询数据库
 	user, err := dblayer.GetUserInfo(username)
 	if err != nil {

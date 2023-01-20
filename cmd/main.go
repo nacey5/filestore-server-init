@@ -2,6 +2,7 @@ package main
 
 import (
 	"filestore-server/global"
+	"filestore-server/handler"
 	"filestore-server/model"
 	"filestore-server/pkg/setting"
 	"filestore-server/routers"
@@ -57,6 +58,7 @@ func main() {
 	//http.HandleFunc("/user/signup", handler.SignupHandler)
 	//http.HandleFunc("/user/signin", handler.SignInHandler)
 	//http.HandleFunc("/user/info", handler.UserInfoHandler)
+	http.HandleFunc("/user/info", handler.HTTPInterceptor(handler.UserInfoHandler))
 	////这里就不搞配置文件那套了，直接读取端口进行访问
 	//err := http.ListenAndServe(":8080", nil)
 	//if err != nil {

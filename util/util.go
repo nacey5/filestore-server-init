@@ -80,6 +80,9 @@ func GenToken(username string) string {
 
 // todo 判断token是否过期
 func IsTokenValid(token string) bool {
+	if len(token) != 40 {
+		return false
+	}
 	//1.判断token的时效性，是否过期
 	//2.从数据库表tbl_user_token查询username对应的token信息
 	//3,对比两个token是否一致：是返回true，不是返回false
