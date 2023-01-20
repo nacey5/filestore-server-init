@@ -3,12 +3,14 @@ package handler
 import (
 	"encoding/json"
 	_const "filestore-server/const"
+	dblayer "filestore-server/db"
 	"filestore-server/meta"
 	"filestore-server/util"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -57,7 +59,15 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		println(fileMeta.FileSha1)
 		meta.UpdateFileMeta(fileMeta)
 
-		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
+		//todo 更新用户文件记录-->要在gin框架中进行对方法的改造，这是初始方法
+		r.ParseForm()
+		username := r.Form.Get("username")
+		suc := dblayer.OnUserFileUploadFinished(username, fileMeta.FileSha1, fileMeta.FileName, fileMeta.FileSize)
+		if suc {
+			http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
+		} else {
+			w.Write([]byte("Upload Failed."))
+		}
 	}
 }
 
@@ -144,4 +154,58 @@ func FileDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	meta.RemoveFileMeta(fileSha1)
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// FileQueryHandler : 查询批量的文件元信息
+func FileQueryHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	limitCnt, _ := strconv.Atoi(r.Form.Get("limit"))
+	username := r.Form.Get("username")
+	//fileMetas, _ := meta.GetLastFileMetasDB(limitCnt)
+	userFiles, err := dblayer.QueryUserFileMetas(username, limitCnt)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	data, err := json.Marshal(userFiles)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(data)
+}
+
+// TryFastUploadHandler 妙传接口 todo 使用gin进行改造
+func TryFastUploadHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	//1.解析请求餐宿
+	username := r.Form.Get("username")
+	filehash := r.Form.Get("filehash")
+	filename := r.Form.Get("filename")
+	filesize, _ := strconv.Atoi(r.Form.Get("filesize"))
+	//2.从文件表中查询相同hash的文件记录
+	fileMeta, err := meta.GetFileMetaDB(filehash)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	//3.查不到记录则返回秒传失败
+	if fileMeta.FileSha1 == "" {
+		resp := util.RespMsg{Code: -1, Msg: "秒传失败，请访问普通上传接口"}
+		w.Write(resp.JSONBytes())
+		return
+	}
+	//4.上传过则将文件信息写入用户文件表，返回成功
+	suc := dblayer.OnUserFileUploadFinished(username, filehash, filename, int64(filesize))
+	if suc {
+		res := util.RespMsg{Code: 0, Msg: "秒传成功"}
+		w.Write(res.JSONBytes())
+		return
+	} else {
+		res := util.RespMsg{Code: -2, Msg: "秒传失败，请稍后重试"}
+		w.Write(res.JSONBytes())
+		return
+	}
 }
