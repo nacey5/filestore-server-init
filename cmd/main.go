@@ -2,6 +2,7 @@ package main
 
 import (
 	"filestore-server/global"
+	"filestore-server/handler"
 	"filestore-server/model"
 	"filestore-server/pkg/setting"
 	"filestore-server/routers"
@@ -61,7 +62,10 @@ func main() {
 	//http.HandleFunc("/user/info", handler.HTTPInterceptor(handler.UserInfoHandler))
 	// todo 需要使用router进行gin改造
 	//http.HandleFunc("/file/fastupload", handler.HTTPInterceptor(handler.TryFastUploadHandler))
-
+	//todo 分块上传接口-->进行gin改造
+	http.HandleFunc("/file/mpupload/init", handler.HTTPInterceptor(handler.InitialMultipartUploadHandler))
+	http.HandleFunc("/file/mpupload/uppart", handler.HTTPInterceptor(handler.UploadPartHandler))
+	http.HandleFunc("/file/mpupload/complete", handler.HTTPInterceptor(handler.CompleteUploadHandler))
 	////这里就不搞配置文件那套了，直接读取端口进行访问
 	//err := http.ListenAndServe(":8080", nil)
 	//if err != nil {

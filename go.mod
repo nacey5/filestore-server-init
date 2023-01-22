@@ -12,6 +12,7 @@ require (
 
 require (
 	github.com/eddycjy/opentracing-gorm v0.0.0-20200209122056-516a807d2182 // indirect
+	github.com/garyburd/redigo v1.6.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
