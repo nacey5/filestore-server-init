@@ -5,8 +5,10 @@ import (
 	_const "filestore-server/const"
 	dblayer "filestore-server/db"
 	"filestore-server/meta"
+	"filestore-server/store/ceph"
 	"filestore-server/util"
 	"fmt"
+	"gopkg.in/amz.v1/s3"
 	"io"
 	"net/http"
 	"os"
@@ -56,7 +58,15 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		newFile.Seek(0, 0)
 		fileMeta.FileSha1 = util.FileSha1(newFile)
-		println(fileMeta.FileSha1)
+
+		//同时将文件写入ceph存储
+		newFile.Seek(0, 0)
+		data, _ := io.ReadAll(newFile)
+		bucket := ceph.GetCephBucket("userfile")
+		cephPath := "/ceph/" + fileMeta.FileSha1
+		_ = bucket.Put(cephPath, data, "octet-stream", s3.PublicRead)
+		fileMeta.Location = cephPath
+
 		meta.UpdateFileMeta(fileMeta)
 
 		//todo 更新用户文件记录-->要在gin框架中进行对方法的改造，这是初始方法
